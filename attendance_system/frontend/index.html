@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生人脸识别考勤系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>学生人脸识别考勤系统</h1>
+        </header>
+        
+        <nav>
+            <ul>
+                <li><a href="#add-student" class="active" onclick="showSection('add-student')">添加学生</a></li>
+                <li><a href="#student-info" onclick="showSection('student-info')">学生信息</a></li>
+                <li><a href="#course-selection" onclick="showSection('course-selection')">学生选课</a></li>
+                <li><a href="#add-course" onclick="showSection('add-course')">课程管理</a></li>
+                <li><a href="#attendance" onclick="showSection('attendance')">人脸识别考勤</a></li>
+                <li><a href="#records" onclick="showSection('records')">考勤记录</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <!-- 添加学生部分 -->
+            <section id="add-student" class="section active">
+                <h2>添加学生</h2>
+                <form id="student-form">
+                    <div class="form-group">
+                        <label for="student-id">学号:</label>
+                        <input type="text" id="student-id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-name">姓名:</label>
+                        <input type="text" id="student-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="class-name">班级:</label>
+                        <input type="text" id="class-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="face-image">人脸照片:</label>
+                        <input type="file" id="face-image" accept="image/*" capture="user">
+                        <video id="video" width="320" height="240" autoplay></video>
+                        <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+                        <button type="button" id="capture-btn">拍照</button>
+                        <button type="button" id="debug-face-btn" class="debug-btn">调试人脸检测</button>
+                    </div>
+                    <button type="submit">添加学生</button>
+                </form>
+                <div id="student-message" class="message"></div>
+            </section>
+            
+            <!-- 学生信息部分 -->
+            <section id="student-info" class="section">
+                <h2>学生信息</h2>
+                <div style="margin-bottom: 10px;">
+                    <input type="text" id="debug-student-id" placeholder="输入学生学号进行调试">
+                    <button onclick="debugStudent(document.getElementById('debug-student-id').value)">调试学生人脸数据</button>
+                </div>
+                <table id="students-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>学号</th>
+                            <th>姓名</th>
+                            <th>班级</th>
+                            <th>照片</th>
+                            <th>课程数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 学生信息将通过AJAX加载 -->
+                    </tbody>
+                </table>
+                <div id="students-message" class="message"></div>
+            </section>
+            
+            <!-- 学生选课部分 -->
+            <section id="course-selection" class="section">
+                <h2>学生选课</h2>
+                <div class="course-selection-container">
+                    <div class="selection-form">
+                        <div class="form-group">
+                            <label for="select-student">选择学生:</label>
+                            <select id="select-student">
+                                <option value="">请选择学生</option>
+                                <!-- 学生选项将通过AJAX加载 -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="select-course">选择课程:</label>
+                            <select id="select-course">
+                                <option value="">请选择课程</option>
+                                <!-- 课程选项将通过AJAX加载 -->
+                            </select>
+                        </div>
+                        <button id="assign-course-btn">分配课程</button>
+                        <div id="assignment-message" class="message"></div>
+                    </div>
+                    
+                    <div class="student-courses">
+                        <h3>学生已选课程</h3>
+                        <div class="form-group">
+                            <label for="view-student">查看学生课程:</label>
+                            <select id="view-student">
+                                <option value="">请选择学生</option>
+                                <!-- 学生选项将通过AJAX加载 -->
+                            </select>
+                        </div>
+                        <table id="student-courses-table">
+                            <thead>
+                                <tr>
+                                    <th>课程名称</th>
+                                    <th>开始时间</th>
+                                    <th>结束时间</th>
+                                    <th>星期</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 学生课程将通过AJAX加载 -->
+                            </tbody>
+                        </table>
+                        <div id="student-courses-message" class="message"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 课程管理部分 -->
+            <section id="add-course" class="section">
+                <h2>课程管理</h2>
+                <div class="course-management">
+                    <div class="add-course">
+                        <h3>添加课程</h3>
+                        <form id="course-form">
+                            <div class="form-group">
+                                <label for="course-name">课程名称:</label>
+                                <input type="text" id="course-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="course-time-start">开始时间:</label>
+                                <input type="time" id="course-time-start" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="course-time-end">结束时间:</label>
+                                <input type="time" id="course-time-end" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="weekday">星期:</label>
+                                <select id="weekday" required>
+                                    <option value="Monday">星期一</option>
+                                    <option value="Tuesday">星期二</option>
+                                    <option value="Wednesday">星期三</option>
+                                    <option value="Thursday">星期四</option>
+                                    <option value="Friday">星期五</option>
+                                    <option value="Saturday">星期六</option>
+                                    <option value="Sunday">星期日</option>
+                                </select>
+                            </div>
+                            <button type="submit">添加课程</button>
+                        </form>
+                        <div id="course-message" class="message"></div>
+                    </div>
+                    
+                    <div class="course-list">
+                        <h3>课程列表</h3>
+                        <table id="courses-table">
+                            <thead>
+                                <tr>
+                                    <th>课程名称</th>
+                                    <th>开始时间</th>
+                                    <th>结束时间</th>
+                                    <th>星期</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 课程将通过AJAX加载 -->
+                            </tbody>
+                        </table>
+                        <div id="courses-message" class="message"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 人脸识别考勤部分 -->
+            <section id="attendance" class="section">
+                <h2>人脸识别考勤</h2>
+                <div class="camera-container">
+                    <video id="attendance-video" width="320" height="240" autoplay></video>
+                    <canvas id="attendance-canvas" width="320" height="240" style="display:none;"></canvas>
+                </div>
+                <button id="recognize-btn">开始识别</button>
+                <div id="attendance-message" class="message"></div>
+            </section>
+            
+            <!-- 考勤记录部分 -->
+            <section id="records" class="section">
+                <h2>考勤记录</h2>
+                <button id="updateAtt" onclick="checkAbsences()">
+                    检查缺勤记录
+                </button>
+                <table id="records-table">
+                    <thead>
+                        <tr>
+                            <th>学号</th>
+                            <th>姓名</th>
+                            <th>班级</th>
+                            <th>课程</th>
+                            <th>日期</th>
+                            <th>时间</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 记录将通过AJAX加载 -->
+                    </tbody>
+                </table>
+                <div id="records-message" class="message"></div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
